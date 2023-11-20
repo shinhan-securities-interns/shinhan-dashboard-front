@@ -4,21 +4,19 @@ pipeline {
             yaml """
 kind: Pod
 metadata:
-  name: kaniko
+  name: demoPod
 spec:
   nodeName: k8s-worker01
   dnsPolicy: Default
   containers:
-  - name: kaniko
-    namespace: jenkins
-    image: gcr.io/kaniko-project/executor:debug
-    imagePullPolicy: Always
+  - name: docker
+    image: docker:latest
     command:
-    - /busybox/cat
+      - cat
     tty: true
     volumeMounts:
-      - name: jenkins-docker-cfg
-        mountPath: /kaniko/.docker
+    - name: dockersock
+      mountPath: /var/run/docker.sock
   - name: kubectl
     namespace: jenkins
     image: bitnami/kubectl:latest
@@ -29,6 +27,9 @@ spec:
     securityContext:
       runAsUser: 0
   volumes:
+  - name: dockersock
+    hostPath:
+      path: /var/run/docker.sock
   - name: jenkins-docker-cfg
     namespace: jenkins
     projected:
@@ -43,32 +44,20 @@ spec:
     }
     environment {
         REPOSITORY  = 'jang1023'
-        IMAGE       = 'fastapi'
+        IMAGE       = 'fastap-front'
+        DOCKERHUB_CREDENTIALS = credentials('docker_cre')
     }
     stages {
         stage('Build Docker image') {
             steps {
-                container('kaniko') {
-                    script {
-                        sh "executor --dockerfile=Dockerfile --context=./ --destination=${REPOSITORY}/${IMAGE}:${GIT_COMMIT}"
-                    }
-                }
-            }
-        }
-        stage('Deploy kubernetes ') {
-            steps {
                 script {
-                    withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                        container('kubectl') {
-                            sh """
-                            export KUBECONFIG=\$KUBECONFIG
-                            kubectl set image deployment/fastapi-app lsb8375/my-s2d:1.5=${REPOSITORY}/${IMAGE}:${GIT_COMMIT} -n demo # 이거 다시 프론트 배포용으로 수정
-                            kubectl rollout restart deployment/fastapi-app -n demo
-                            """
-                        }
-                    }
-                }
+                    container('docker'){
+                    sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
+                    sh "docker build -t ${REPOSITORY}/${IMAGE}:${GIT_COMMIT} -f Dockerfile . --platform=linux/amd64"
+                    sh "docker push ${REPOSITORY}/${IMAGE}:${GIT_COMMIT}"
             }
         }
     }
+  }
+ }
 }
