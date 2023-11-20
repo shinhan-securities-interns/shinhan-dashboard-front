@@ -56,4 +56,5 @@ export const UserInput = styled.input`
 export const Image = styled.img`
   width: 12%;
   height: auto;
+  filter: invert(100%);
 `;

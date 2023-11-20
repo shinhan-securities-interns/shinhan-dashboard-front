@@ -1,4 +1,15 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+const smoothAppear = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(-5%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
 
 export const Container = styled.div`
   width: 90vw;
@@ -14,6 +25,50 @@ export const Container = styled.div`
 export const Menu = styled.div`
   width: 15%;
   border-radius: 15px;
+`;
+
+export const ItemContainer = styled.div`
+  height: 85%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  /* Webkit (Chrome, Safari, etc.) */
+  &::-webkit-scrollbar {
+    width: 0;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+`;
+
+export const Item = styled.div`
+  height: 5vh;
+  width: 100%;
+  font-size: 1.2rem;
+  color: transparent;
+  padding-left: 1vw;
+  background-image: linear-gradient(to top, #0074cc, #ffffff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  cursor: pointer;
+  &:hover {
+    color: white;
+  }
+`;
+
+export const ButtonWrapper = styled.div`
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  margin-left: 1vw;
 `;
 
 export const RightWrapper = styled.div`
@@ -37,15 +92,18 @@ export const AttachWrapper = styled.div`
   grid-template-rows: repeat(2, 1fr);
 `;
 
-export const Button = styled.button`
-  width: 70px;
-  height: 70px;
-  border: none;
-  border-radius: 8px;
-  margin: 12px;
-  cursor: move;
-  font-size: 30px;
+export const Button = styled.div`
+  width: 90%;
+  height: 8%;
+  display: flex;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: white;
   background: #eaeaea4f;
+  justify-content: center;
+  align-items: center;
+  animation: ${smoothAppear} 1s;
 `;
 
 export const AddButton = styled.button`
