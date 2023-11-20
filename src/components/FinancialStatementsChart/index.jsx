@@ -1,97 +1,152 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
+import { axiosInstance } from '../../apis';
+import { Loading } from '../index';
 import { Container, ChartWrapper } from './styled';
 
-const FinancialStatementsChart = () => {
-  const data = [
-    { time_close: 1637221800000, salesFigures: 50, operatingProfit: 10 },
-    { time_close: 1637308200000, salesFigures: 155, operatingProfit: 55 },
-    { time_close: 1637394600000, salesFigures: 185, operatingProfit: 80 },
-    { time_close: 1637481000000, salesFigures: 165, operatingProfit: 65 },
-    { time_close: 1637567400000, salesFigures: 150, operatingProfit: 70 },
-    { time_close: 1637653800000, salesFigures: 75, operatingProfit: 20 },
-    { time_close: 1637740200000, salesFigures: 180, operatingProfit: 80 },
-    { time_close: 1637826600000, salesFigures: 185, operatingProfit: 85 },
-    { time_close: 1637913000000, salesFigures: 155, operatingProfit: 60 },
-    { time_close: 1637999400000, salesFigures: 195, operatingProfit: 95 },
-  ];
+const FinancialStatementsChart = ({ flag, code }) => {
+  const [chartData, setChartData] = useState([]);
+
+  const getData = async (endpoint) => {
+    try {
+      const response = await axiosInstance.get(endpoint);
+      return Object.values(response.data)[0];
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const mergeData = (dataOne, dataTwo) => {
+    const result = [];
+
+    for (const time in dataOne) {
+      if (
+        dataTwo.hasOwnProperty(time) &&
+        !isNaN(parseInt(dataOne[time])) &&
+        !isNaN(parseInt(dataTwo[time]))
+      ) {
+        result.push({
+          time: String(time),
+          oneData: parseInt(dataOne[time]),
+          twoData: parseInt(dataTwo[time]),
+        });
+      }
+    }
+
+    setChartData(result);
+    console.log(result);
+  };
+
+  const fetchData = async () => {
+    try {
+      let endpointOne, endpointTwo;
+
+      if (flag === 1) {
+        endpointOne = `/revenue/quarter/${code}`;
+        endpointTwo = `/operating_profit/quarter/${code}`;
+      } else if (flag === 2) {
+        endpointOne = `/net_profit/quarter/${code}`;
+        endpointTwo = `/per/quarter/${code}`;
+      }
+
+      const [dataOne, dataTwo] = await Promise.all([
+        getData(endpointOne),
+        getData(endpointTwo),
+      ]);
+
+      mergeData(dataOne, dataTwo);
+    } catch (error) {
+      console.error('데이터 가져오기 실패:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [flag]);
 
   return (
     <Container>
-      <ChartWrapper>
-        <ReactApexChart
-          height={'100%'}
-          type="line"
-          series={[
-            {
-              name: '매출액',
-              data: data?.map((entry) => entry.salesFigures),
-            },
-            {
-              name: '영업이익',
-              data: data?.map((entry) => entry.operatingProfit),
-            },
-          ]}
-          options={{
-            theme: {
-              mode: 'dark',
-            },
-            chart: {
-              height: 500,
-              width: 500,
-              toolbar: {
-                tools: {},
+      {chartData.length === 0 ? (
+        <Loading />
+      ) : (
+        <ChartWrapper>
+          <ReactApexChart
+            width={'100%'}
+            height={'100%'}
+            type="line"
+            series={[
+              {
+                name: flag === 1 ? '매출액' : '당기순이익',
+                data: chartData?.map((entry) => entry.oneData),
               },
-              background: 'transparent',
-            },
-            stroke: {
-              curve: 'smooth',
-              width: 4,
-            },
-            fill: {
-              type: 'gradient',
-              gradient: {
-                gradientToColors: ['#F2CD5C', '#F2921D', '#A61F69', '#400E32'],
-                stops: [0, 100],
+              {
+                name: flag === 1 ? '영업이익' : 'PER',
+                data: chartData?.map((entry) => entry.twoData),
               },
-            },
-            grid: {
-              show: false,
-            },
-            plotOptions: {
-              candlestick: {
-                wick: {
-                  useFillColor: true,
+            ]}
+            options={{
+              theme: {
+                mode: 'dark',
+              },
+              chart: {
+                toolbar: {
+                  tools: {},
+                },
+                background: 'transparent',
+                marginLeft: 20,
+              },
+              stroke: {
+                curve: 'smooth',
+                width: 4,
+              },
+              fill: {
+                type: 'gradient',
+                gradient: {
+                  gradientToColors: [
+                    '#F2CD5C',
+                    '#F2921D',
+                    '#A61F69',
+                    '#400E32',
+                  ],
+                  stops: [0, 100],
                 },
               },
-            },
-            xaxis: {
-              labels: {
+              grid: {
                 show: false,
-                datetimeFormatter: {
-                  month: "mmm 'yy",
+              },
+              plotOptions: {
+                candlestick: {
+                  wick: {
+                    useFillColor: true,
+                  },
                 },
               },
-              type: 'datetime',
-              categories: data?.map((entry) => entry.time_close),
-              axisBorder: {
-                show: false,
+              xaxis: {
+                labels: {
+                  show: true,
+                },
+                type: 'category',
+                categories: chartData?.map((entry) => entry.time),
+                axisBorder: {
+                  show: false,
+                },
+                axisTicks: {
+                  show: false,
+                },
               },
-              axisTicks: {
-                show: false,
+              yaxis: {
+                show: true,
               },
-            },
-            yaxis: {
-              show: false,
-            },
-            tooltip: {
-              y: {
-                formatter: (v) => `$ ${v.toFixed(2)}`,
+              tooltip: {
+                y: {
+                  formatter: (v) => v.toFixed(2),
+                },
               },
-            },
-          }}
-        />
-      </ChartWrapper>
+            }}
+          />
+        </ChartWrapper>
+      )}
     </Container>
   );
 };
