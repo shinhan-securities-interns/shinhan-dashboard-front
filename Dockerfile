@@ -1,6 +1,8 @@
-FROM node:13.12.0-alpine
-WORKDIR /frontend
-COPY package.json package-lock.json ./
+FROM node:14.17.6-alpine
+WORKDIR /app
+ENV PATH /app/node_modules/.bin:$PATH
+COPY package.json /app/package.json
+COPY package-lock.json /app/package-lock.json
 RUN npm install
-COPY . ./
 EXPOSE 80
+CMD ["npm", "start"]
