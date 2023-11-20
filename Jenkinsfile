@@ -44,7 +44,7 @@ spec:
     }
     environment {
         REPOSITORY  = 'jang1023'
-        IMAGE       = 'fastap-front'
+        IMAGE       = 'fastapi-front'
         DOCKERHUB_CREDENTIALS = credentials('docker_cre')
     }
     stages {
