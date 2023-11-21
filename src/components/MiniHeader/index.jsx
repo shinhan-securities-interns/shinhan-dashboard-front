@@ -42,8 +42,8 @@ const MiniHeader = () => {
   useEffect(() => {
     fetchPredict();
     setInterval(() => {
-      //fetchData();
-    }, 300000000);
+      fetchData();
+    }, 3000);
   }, []);
 
   const isDataAndPredictAvailable = data && predict;

@@ -156,7 +156,7 @@ const Board = () => {
       <RightWrapper>
         <MiniHeader />
         <MemoWrapper>
-          {stickers && stickers.x !== null && !isNaN(stickers) && (
+          {stickers && stickers.x !== null && !isNaN(stickers.x) && (
             <StickyNote
               value={stickers.text}
               initialPosition={{ x: stickers.x, y: stickers.y }}
