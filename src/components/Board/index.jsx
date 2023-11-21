@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useRecoilValue } from 'recoil';
-import { stockItemsState } from '../../store/atoms';
-import { axiosInstance } from '../../apis';
+import { useRecoilValue, useRecoilState } from 'recoil';
+import LZString from 'lz-string';
+import { stockItemsState, isURLSearchParams } from '../../store/atoms';
 import { Area, Input, MiniHeader, StickyNote } from '../index';
+import memo from '../../assets/images/memo.png';
 import {
   Container,
   Menu,
@@ -17,8 +18,9 @@ import {
 } from './styled';
 
 const Board = () => {
+  const [paramData, setParamData] = useRecoilState(isURLSearchParams);
   const stockItems = useRecoilValue(stockItemsState);
-  const [stickers, setStickers] = useState([]);
+  const [stickers, setStickers] = useState(null);
   const [stock, setStock] = useState({});
   const [areas, setAreas] = useState({
     areas1: '',
@@ -33,9 +35,8 @@ const Board = () => {
     { id: 'btn2', icon: '📈', label: '주식 차트' },
     { id: 'btn3', icon: '📋', label: '재무제표' },
     { id: 'btn4', icon: '📊', label: '매출액 / 영업이익 차트' },
-    { id: 'btn5', icon: '📊', label: '당기순이익 / PER 차트' },
+    { id: 'btn5', icon: '📊', label: 'PER / PBR 차트' },
     { id: 'btn6', icon: '🗨️', label: '종목토론방' },
-    { id: 'btn7', icon: '📝', label: '종목 평가 점수' },
   ];
 
   const handleDragStart = (event, { id, icon, label }) => {
@@ -68,29 +69,15 @@ const Board = () => {
   };
 
   const handleAddSticker = () => {
-    const newStickers = [...stickers, { x: 100, y: 100 }];
-    setStickers(newStickers);
+    setStickers({ x: 30, y: 20, width: 150, height: 150, text: '' });
   };
 
-  const handleDeleteSticker = (index) => {
-    const updatedStickers = stickers.filter((_, i) => i !== index);
-    setStickers(updatedStickers);
-  };
-
-  const getContent = async () => {
-    try {
-      const response = await axiosInstance.get(
-        `http://${process.env.REACT_APP_INDI_URL}/indi-stock/035720/score`,
-        {
-          headers: {
-            'ngrok-skip-browser-warning': 'value',
-          },
-        }
-      );
-      console.log(response);
-    } catch (error) {
-      console.error(error);
-    }
+  const handleDeleteSticker = () => {
+    setStickers(null);
+    setParamData((prevData) => ({
+      ...prevData,
+      memo: null,
+    }));
   };
 
   const handleItemClick = (item) => {
@@ -102,13 +89,41 @@ const Board = () => {
   };
 
   useEffect(() => {
-    getContent();
+    setItemClicked(false);
+  }, [stockItems]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dataParam = urlParams.get('data');
+    const decodedParam = dataParam ? dataParam.replace(/ /g, '+') : null;
+    if (decodedParam) {
+      const decompressedData = LZString.decompressFromBase64(decodedParam);
+      const initialData = JSON.parse(decompressedData);
+      setStickers(initialData.memo);
+      setAreas(initialData.areas);
+      setParamData((prevData) => ({
+        ...prevData,
+        memo: initialData.memo,
+        areas: initialData.areas,
+      }));
+    }
   }, []);
 
   useEffect(() => {
-    setItemClicked(false);
-    console.log('Recoil 스테이트 값 변경:', stockItems);
-  }, [stockItems]);
+    setParamData((prevData) => ({
+      ...prevData,
+      areas: areas,
+    }));
+  }, [areas]);
+
+  useEffect(() => {
+    console.log(paramData);
+    const save = LZString.compressToBase64(JSON.stringify(paramData));
+    window.history.pushState({}, null, `?data=${save}`);
+  }, [paramData]);
+
+  console.log(paramData);
+  console.log(stickers);
 
   return (
     <Container>
@@ -141,15 +156,16 @@ const Board = () => {
       <RightWrapper>
         <MiniHeader />
         <MemoWrapper>
-          {stickers.map((position, index) => (
+          {stickers && stickers.x !== null && !isNaN(stickers) && (
             <StickyNote
-              key={index}
-              initialPosition={position}
-              onDelete={() => handleDeleteSticker(index)}
+              value={stickers.text}
+              initialPosition={{ x: stickers.x, y: stickers.y }}
+              initialSize={{ width: stickers.width, height: stickers.height }}
+              onDelete={handleDeleteSticker}
             />
-          ))}
+          )}
         </MemoWrapper>
-        <AddButton onClick={handleAddSticker}>➕</AddButton>
+        <AddButton src={memo} onClick={handleAddSticker} />
         <AttachWrapper>
           {Object.keys(areas).map((area) => (
             <Area
@@ -157,6 +173,7 @@ const Board = () => {
               dropFnc={(e) => handleDrop(e, area)}
               key={area}
               data={areas[area]}
+              id={area}
             />
           ))}
         </AttachWrapper>

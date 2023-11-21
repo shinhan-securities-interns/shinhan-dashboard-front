@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useRecoilState } from 'recoil';
 import { Loading } from '../index';
+import { socketState } from '../../store/atoms';
+import { axiosInstance } from '../../apis';
 import { Container, StyledTable, StyledTR, Key, Value } from './styled';
 
 const StockInformation = ({ code }) => {
+  const [socketAvailable, isSocketAvailable] = useRecoilState(socketState);
   const [socket, setSocket] = useState(null);
   const [stockData, setStockData] = useState(null);
   const keyMap = {
@@ -20,34 +24,58 @@ const StockInformation = ({ code }) => {
     trasctionIntesity: '체결강도',
   };
 
+  const getPrice = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `http://${process.env.REACT_APP_INDI_URL}/indi-stock/${code}/price`,
+        {
+          headers: {
+            'ngrok-skip-browser-warning': 'value',
+          },
+        }
+      );
+      setStockData(response.data.priceInfo);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
-    const newSocket = new WebSocket('ws://133.186.151.211:8767');
-    setSocket(newSocket);
+    if (socketAvailable) {
+      const newSocket = new WebSocket('ws://133.186.151.211:8767');
+      setSocket(newSocket);
 
-    newSocket.addEventListener('open', () => {
-      console.log('WebSocket 연결이 열렸습니다.');
-      newSocket.send(code);
-    });
+      newSocket.addEventListener('open', () => {
+        console.log('WebSocket 연결이 열렸습니다.');
+        newSocket.send(code);
+      });
 
-    newSocket.addEventListener('message', (event) => {
-      const receivedData = JSON.parse(event.data);
-      const { dayOverDayChange, ...filteredData } = receivedData;
-      setStockData(filteredData);
-    });
+      newSocket.addEventListener('message', (event) => {
+        const receivedData = JSON.parse(event.data);
+        const { dayOverDayChange, ...filteredData } = receivedData;
+        console.log(event.data);
+        setStockData(filteredData);
+      });
 
-    newSocket.addEventListener('close', () => {
-      console.log('WebSocket 연결이 닫혔습니다.');
-    });
+      newSocket.addEventListener('close', () => {
+        console.log('WebSocket 연결이 닫혔습니다.');
+        isSocketAvailable(false);
+        getPrice();
+      });
 
-    newSocket.addEventListener('error', (event) => {
-      console.error('WebSocket 에러:', event.data);
-    });
+      newSocket.addEventListener('error', (event) => {
+        console.error('WebSocket 에러:', event.data);
+      });
 
-    return () => {
-      newSocket.close();
-    };
+      return () => {
+        newSocket.close();
+      };
+    } else {
+      getPrice();
+    }
   }, [code]);
-  console.log(stockData);
+
   return (
     <Container>
       {stockData === null ? (

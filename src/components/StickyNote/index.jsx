@@ -1,51 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSetRecoilState } from 'recoil';
+import { isURLSearchParams } from '../../store/atoms';
 import Draggable from 'react-draggable';
 import { Resizable } from 're-resizable';
-import styled from 'styled-components';
+import { MemoContainer, CloseButton, Textarea } from './styled';
 
-const MemoContainer = styled.div`
-  background-color: #ffd700;
-  border: 1px solid #ffc107;
-  border-radius: 10px;
-  user-select: none;
-  width: 100%;
-  height: 100%;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-`;
-
-const Textarea = styled.textarea`
-  width: 90%;
-  height: 90%;
-  margin: 5%;
-  resize: none;
-  border: none;
-  background-color: transparent;
-  font-family: 'Arial', sans-serif;
-  font-size: 14px;
-  color: #333;
-  outline: none;
-`;
-
-const StickyNote = ({ initialPosition, onDelete }) => {
-  const [memoText, setMemoText] = useState({
+const StickyNote = ({ value, initialPosition, initialSize, onDelete }) => {
+  const setParamData = useSetRecoilState(isURLSearchParams);
+  const [memoInfo, setMemoInfo] = useState({
     x: initialPosition.x,
     y: initialPosition.y,
-    width: 200,
-    height: 200,
-    text: '',
+    width: initialSize.width,
+    height: initialSize.height,
+    text: value,
   });
 
   const handleDrag = (e, ui) => {
-    setMemoText((prevMemoText) => ({
+    setMemoInfo((prevMemoText) => ({
       ...prevMemoText,
       x: ui.x,
       y: ui.y,
@@ -53,7 +24,7 @@ const StickyNote = ({ initialPosition, onDelete }) => {
   };
 
   const handleResize = (e, direction, ref, delta) => {
-    setMemoText((prevMemoText) => ({
+    setMemoInfo((prevMemoText) => ({
       ...prevMemoText,
       width: ref.offsetWidth,
       height: ref.offsetHeight,
@@ -64,14 +35,20 @@ const StickyNote = ({ initialPosition, onDelete }) => {
     onDelete();
   };
 
+  useEffect(() => {
+    setParamData((prevData) => ({
+      ...prevData,
+      memo: memoInfo,
+    }));
+  }, [memoInfo]);
+
   return (
     <Draggable
       defaultPosition={{ x: initialPosition.x, y: initialPosition.y }}
       onStop={(e, data) => handleDrag(e, data)}
-      zIndex={99}
     >
       <Resizable
-        size={{ width: memoText.width, height: memoText.height }}
+        size={{ width: memoInfo.width, height: memoInfo.height }}
         onResizeStop={(e, direction, ref, delta) =>
           handleResize(e, direction, ref, delta)
         }
@@ -80,9 +57,9 @@ const StickyNote = ({ initialPosition, onDelete }) => {
         <MemoContainer>
           <CloseButton onClick={handleClose}>X</CloseButton>
           <Textarea
-            value={memoText.text}
+            value={memoInfo.text}
             onChange={(e) =>
-              setMemoText((prevMemoText) => ({
+              setMemoInfo((prevMemoText) => ({
                 ...prevMemoText,
                 text: e.target.value,
               }))

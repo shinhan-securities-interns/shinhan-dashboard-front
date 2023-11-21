@@ -18,7 +18,6 @@ export const Container = styled.div`
   box-shadow: 1px -3px 1px 0 rgba(255, 255, 255, 0.3);
   border-radius: 15px;
   display: flex;
-  position: relative;
   overflow: hidden;
 `;
 
@@ -51,13 +50,14 @@ export const ItemContainer = styled.div`
 export const Item = styled.div`
   height: 5vh;
   width: 100%;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: transparent;
   padding-left: 1vw;
   background-image: linear-gradient(to top, #0074cc, #ffffff);
   -webkit-background-clip: text;
   background-clip: text;
   cursor: pointer;
+  white-space: normal;
   &:hover {
     color: white;
   }
@@ -82,7 +82,7 @@ export const AttachWrapper = styled.div`
   width: 100%;
   height: 90%;
   position: relative;
-  z-index: 1;
+
   border-radius: 15px;
   border: 2px dashed rgba(255, 255, 255, 0.3);
   box-sizing: border-box;
@@ -106,18 +106,17 @@ export const Button = styled.div`
   animation: ${smoothAppear} 1s;
 `;
 
-export const AddButton = styled.button`
-  width: 5%;
-  height: 80%;
+export const AddButton = styled.img`
+  width: 2%;
+  height: auto;
   position: fixed;
-  top: -31vh;
-  left: 18.5vw;
+  top: 8vh;
+  left: 20vw;
   border: none;
   font-size: 2rem;
   color: white;
   cursor: pointer;
   background-color: transparent;
-  z-index: 10;
 `;
 
 export const MemoWrapper = styled.div`
