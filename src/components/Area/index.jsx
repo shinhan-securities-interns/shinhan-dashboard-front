@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import Draggable from 'react-draggable';
 import { Resizable } from 're-resizable';
-import { FSChart, StockChart, DiscussionCommunity } from '../index';
+import {
+  FSTable,
+  FSChart,
+  StockChart,
+  StockInformation,
+  DiscussionCommunity,
+} from '../index';
 import { Container, Title, Content } from './styled';
 
 const Area = ({ overFnc, dropFnc, data }) => {
@@ -31,13 +37,17 @@ const Area = ({ overFnc, dropFnc, data }) => {
           </Title>
           <Content>
             {data.label === '주식 차트' ? (
-              <StockChart />
+              <StockChart code={data.stock.code} />
             ) : data.label === '매출액 / 영업이익 차트' ? (
               <FSChart flag={1} code={data.stock.code} />
             ) : data.label === '당기순이익 / PER 차트' ? (
               <FSChart flag={2} code={data.stock.code} />
             ) : data.label === '종목토론방' ? (
               <DiscussionCommunity code={data.stock.code} />
+            ) : data.label === '재무제표' ? (
+              <FSTable code={data.stock.code} />
+            ) : data.label === '종목 정보' ? (
+              <StockInformation code={data.stock.code} />
             ) : null}
           </Content>
         </Container>

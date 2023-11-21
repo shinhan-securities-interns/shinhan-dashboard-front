@@ -98,7 +98,7 @@ export const Button = styled.div`
   display: flex;
   border-radius: 15px;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: white;
   background: #eaeaea4f;
   justify-content: center;
