@@ -58,6 +58,29 @@ spec:
             }
         }
     }
+        stage('Approval'){
+          steps{
+            slackSend(color: '#FF0000', message: "Please Check Deployment Approval (${env.JOB_URL})")
+            timeout(time: 15, unit:"MINUTES"){
+              input message: 'Do you want to approve the deployment (About.front-server) ?', ok:'YES'
+            }
+          }
+        }
+        stage('Deploy kubernetes ') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                        container('kubectl') {
+                            sh """
+                            export KUBECONFIG=\$KUBECONFIG
+                            kubectl set image deployment/fastapi-front fastapi-front=${REPOSITORY}/${IMAGE}:${GIT_COMMIT} -n demo
+                            kubectl rollout restart deployment/fastapi-front -n demo
+                            """
+                        }
+                    }
+                }
+            }
+        }
   }
  }
 }
