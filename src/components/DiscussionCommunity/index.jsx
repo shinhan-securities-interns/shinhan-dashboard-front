@@ -19,7 +19,7 @@ const DiscussionCommunity = ({ code }) => {
   useEffect(() => {
     console.log(code);
     getList();
-  }, []);
+  }, [code]);
 
   return (
     <Container>
