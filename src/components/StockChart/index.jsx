@@ -4,26 +4,6 @@ import { axiosInstance } from '../../apis';
 import { Loading } from '../index';
 import { Container, ChartWrapper } from './styled';
 
-const formatChartData = (data) => {
-  return data.map((item) => ({
-    x: new Date(
-      `${item.date.substring(0, 4)}-${item.date.substring(
-        4,
-        6
-      )}-${item.date.substring(6)}T${item.time.substring(
-        0,
-        2
-      )}:${item.time.substring(2, 4)}:${item.time.substring(4)}`
-    ).getTime(),
-    y: [
-      parseFloat(item.openingPrice),
-      parseFloat(item.highPrice),
-      parseFloat(item.lowPrice),
-      parseFloat(item.endPrice),
-    ],
-  }));
-};
-
 const StockChart = ({ code }) => {
   const [chartData, setChartData] = useState([]);
   const [flag, setFlag] = useState('D');
@@ -43,6 +23,26 @@ const StockChart = ({ code }) => {
       console.error(error);
       throw error;
     }
+  };
+
+  const formatChartData = (data) => {
+    return data.map((item) => ({
+      x: new Date(
+        `${item.date.substring(0, 4)}-${item.date.substring(
+          4,
+          6
+        )}-${item.date.substring(6)}T${item.time.substring(
+          0,
+          2
+        )}:${item.time.substring(2, 4)}:${item.time.substring(4)}`
+      ).getTime(),
+      y: [
+        parseFloat(item.openingPrice),
+        parseFloat(item.highPrice),
+        parseFloat(item.lowPrice),
+        parseFloat(item.endPrice),
+      ],
+    }));
   };
 
   useEffect(() => {

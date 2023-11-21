@@ -1,9 +1,9 @@
 import styled from 'styled-components';
 
 export const MemoContainer = styled.div`
-  background-color: #ffd700;
-  border: 1px solid #ffc107;
-  border-radius: 10px;
+  background: linear-gradient(to bottom right, #fae387, #ffe371);
+  border: 1px solid #ffd631;
+  border-radius: 5px;
   user-select: none;
   width: 100%;
   height: 100%;
@@ -15,8 +15,9 @@ export const CloseButton = styled.button`
   right: 5px;
   background: none;
   border: none;
-  font-size: 16px;
+  font-size: 0.8rem;
   cursor: pointer;
+  color: #85732c;
 `;
 
 export const Textarea = styled.textarea`
@@ -26,7 +27,6 @@ export const Textarea = styled.textarea`
   resize: none;
   border: none;
   background-color: transparent;
-  font-family: 'Arial', sans-serif;
   font-size: 14px;
   color: #333;
   outline: none;

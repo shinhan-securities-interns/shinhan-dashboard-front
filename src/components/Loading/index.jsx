@@ -2,11 +2,18 @@ import React from 'react';
 import { Container, Image } from './styled';
 import loading from '../../assets/images/loading.gif';
 
-const Loading = () => {
+const Loading = ({ flag }) => {
+  console.log(flag);
   return (
     <Container>
-      <Image src={loading} alt="loading " />
-      불러오는 중
+      {flag ? (
+        <>🙅🏻‍♂️ 재무 정보가 없는 종목입니다.</>
+      ) : (
+        <>
+          <Image src={loading} alt="loading " />
+          불러오는 중
+        </>
+      )}
     </Container>
   );
 };

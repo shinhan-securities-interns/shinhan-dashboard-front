@@ -13,6 +13,7 @@ import {
 
 const FinancialStatementsTable = ({ code }) => {
   const [data, setDate] = useState([]);
+  const [isEmpty, setIsEmpty] = useState(false);
   const getData = async () => {
     try {
       const response = await axiosInstance.get(`/total_yearly/quarter/${code}`);
@@ -28,38 +29,36 @@ const FinancialStatementsTable = ({ code }) => {
     console.log(data);
   }, [code]);
 
-  const years = Object.keys(data);
+  const years = data ? Object.keys(data) : [];
 
   return (
     <Container>
-      {data ? (
-        data.length === 0 ? (
-          <Loading />
-        ) : (
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell></TableCell>
+      {data.length === 0 ? (
+        <Loading flag={isEmpty} />
+      ) : (
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell></TableCell>
+                {years.map((year) => (
+                  <TableCell key={year}>{year}</TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {Object.keys(data[years[0]]).map((date) => (
+                <TableRow key={date}>
+                  <TableCell>{date}</TableCell>
                   {years.map((year) => (
-                    <TableCell key={year}>{year}</TableCell>
+                    <TableCell key={year}>{data[year][date]}</TableCell>
                   ))}
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {Object.keys(data[years[0]]).map((date) => (
-                  <TableRow key={date}>
-                    <TableCell>{date}</TableCell>
-                    {years.map((year) => (
-                      <TableCell key={year}>{data[year][date]}</TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )
-      ) : null}{' '}
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Container>
   );
 };

@@ -6,6 +6,7 @@ import { Container, ChartWrapper } from './styled';
 
 const FinancialStatementsChart = ({ flag, code }) => {
   const [chartData, setChartData] = useState([]);
+  const [isEmpty, setIsEmpty] = useState(false);
 
   const getData = async (endpoint) => {
     try {
@@ -33,9 +34,7 @@ const FinancialStatementsChart = ({ flag, code }) => {
         });
       }
     }
-
     setChartData(result);
-    console.log(result);
   };
 
   const fetchData = async () => {
@@ -46,15 +45,13 @@ const FinancialStatementsChart = ({ flag, code }) => {
         endpointOne = `/revenue/quarter/${code}`;
         endpointTwo = `/operating_profit/quarter/${code}`;
       } else if (flag === 2) {
-        endpointOne = `/net_profit/quarter/${code}`;
-        endpointTwo = `/per/quarter/${code}`;
+        endpointOne = `/per/quarter/${code}`;
+        endpointTwo = `/pbr/quarter/${code}`;
       }
-
       const [dataOne, dataTwo] = await Promise.all([
         getData(endpointOne),
         getData(endpointTwo),
       ]);
-
       mergeData(dataOne, dataTwo);
     } catch (error) {
       console.error('데이터 가져오기 실패:', error);
@@ -68,7 +65,7 @@ const FinancialStatementsChart = ({ flag, code }) => {
   return (
     <Container>
       {chartData.length === 0 ? (
-        <Loading />
+        <Loading flag={isEmpty} />
       ) : (
         <ChartWrapper>
           <ReactApexChart
@@ -77,11 +74,11 @@ const FinancialStatementsChart = ({ flag, code }) => {
             type="line"
             series={[
               {
-                name: flag === 1 ? '매출액' : '당기순이익',
+                name: flag === 1 ? '매출액' : 'PER',
                 data: chartData?.map((entry) => entry.oneData),
               },
               {
-                name: flag === 1 ? '영업이익' : 'PER',
+                name: flag === 1 ? '영업이익' : 'PBR',
                 data: chartData?.map((entry) => entry.twoData),
               },
             ]}
@@ -140,7 +137,7 @@ const FinancialStatementsChart = ({ flag, code }) => {
               },
               tooltip: {
                 y: {
-                  formatter: (v) => v.toFixed(2),
+                  formatter: (v) => (v !== undefined ? v.toFixed(2) : 'N/A'),
                 },
               },
             }}

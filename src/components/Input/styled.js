@@ -32,6 +32,7 @@ export const Container = styled.div`
 
 export const Label = styled.p`
   color: white;
+  font-size: 1.2rem;
   margin-left: 5%;
   animation: ${blink} 2s linear infinite;
 `;
