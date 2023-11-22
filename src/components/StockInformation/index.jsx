@@ -54,19 +54,15 @@ const StockInformation = ({ code }) => {
       });
 
       newSocket.addEventListener('message', (event) => {
-        const string = event.data.replace('{', '');
-        const string2 = string.replace('}', '');
-        const parts = string2.split(',');
-        const jsonData = {};
-        parts.forEach((part) => {
-          const [key, value] = part.split(':');
-          const trimmedKey = key?.trim().replace(/"/g, '') || '';
-          const trimmedValue = value?.trim().replace(/"/g, '') || '';
-          jsonData[trimmedKey] = trimmedValue;
-        });
-        const { dayOverDayChange, ...filteredData } = jsonData;
-        setStockData(filteredData);
-        setLoadData(true);
+        try {
+          const jsonData = JSON.parse(event.data);
+          const { dayOverDayChange, ...filteredData } = jsonData;
+
+          setStockData(filteredData);
+          setLoadData(true);
+        } catch (error) {
+          console.error('데이터 파싱 오류:', error);
+        }
       });
 
       newSocket.addEventListener('close', () => {
