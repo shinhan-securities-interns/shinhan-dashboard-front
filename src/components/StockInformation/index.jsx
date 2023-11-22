@@ -9,6 +9,8 @@ const StockInformation = ({ code }) => {
   const [socketAvailable, isSocketAvailable] = useRecoilState(socketState);
   const [socket, setSocket] = useState(null);
   const [stockData, setStockData] = useState(null);
+  const [loadData, setLoadData] = useState(false);
+  const jsonData = {};
   const keyMap = {
     stockCode: '단축코드',
     realPrice: '현재가',
@@ -52,10 +54,19 @@ const StockInformation = ({ code }) => {
       });
 
       newSocket.addEventListener('message', (event) => {
-        const receivedData = JSON.parse(event.data);
-        const { dayOverDayChange, ...filteredData } = receivedData;
-        console.log(event.data);
+        const string = event.data.replace('{', '');
+        const string2 = string.replace('}', '');
+        const parts = string2.split(',');
+        const jsonData = {};
+        parts.forEach((part) => {
+          const [key, value] = part.split(':');
+          const trimmedKey = key?.trim().replace(/"/g, '') || '';
+          const trimmedValue = value?.trim().replace(/"/g, '') || '';
+          jsonData[trimmedKey] = trimmedValue;
+        });
+        const { dayOverDayChange, ...filteredData } = jsonData;
         setStockData(filteredData);
+        setLoadData(true);
       });
 
       newSocket.addEventListener('close', () => {
@@ -78,7 +89,7 @@ const StockInformation = ({ code }) => {
 
   return (
     <Container>
-      {stockData === null ? (
+      {stockData === null || !loadData ? (
         <Loading />
       ) : (
         <StyledTable>
