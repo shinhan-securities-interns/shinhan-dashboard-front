@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Draggable from 'react-draggable';
 import { Resizable } from 're-resizable';
-import { useRecoilState } from 'recoil';
+import { useSetRecoilState } from 'recoil';
 import LZString from 'lz-string';
 import { isURLSearchParams } from '../../store/atoms';
 import {
@@ -11,10 +11,18 @@ import {
   StockInformation,
   DiscussionCommunity,
 } from '../index';
-import { Container, Title, Content } from './styled';
+import {
+  Container,
+  Title,
+  TitleWrapper,
+  Content,
+  ButtonWrapper,
+  Button,
+} from './styled';
 
 const Area = ({ overFnc, dropFnc, data, id }) => {
-  const [paramData, setParamData] = useRecoilState(isURLSearchParams);
+  const setParamData = useSetRecoilState(isURLSearchParams);
+  const [unit, setUnit] = useState('D');
   const [size, setSize] = useState({ width: '100%', height: '100%' });
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
@@ -30,6 +38,21 @@ const Area = ({ overFnc, dropFnc, data, id }) => {
       x: ui.x,
       y: ui.y,
     });
+  };
+
+  const handleClick = (e) => {
+    switch (e.target.innerText) {
+      case '월':
+        return setUnit('M');
+      case '주':
+        return setUnit('W');
+      case '일':
+        return setUnit('D');
+      case '분':
+        return setUnit('1');
+      default:
+        return;
+    }
   };
 
   useEffect(() => {
@@ -74,7 +97,9 @@ const Area = ({ overFnc, dropFnc, data, id }) => {
       },
     }));
   }, [id, size, position]);
-  console.log(data.length);
+
+  console.log(id);
+
   return (
     <Draggable position={position} onDrag={handleDrag} bounds="parent">
       <Resizable
@@ -84,13 +109,52 @@ const Area = ({ overFnc, dropFnc, data, id }) => {
         }
       >
         <Container onDragOver={overFnc} onDrop={dropFnc}>
-          <Title>
-            {data.length !== 0 &&
-              `${data.icon} ${data.stock.name} ${data.label}`}
-          </Title>
+          {data.label === '주식 차트' ? (
+            <TitleWrapper>
+              <Title isStockChart={'true'}>
+                {data.length !== 0 &&
+                  `${data.icon} ${data.stock.name} ${data.label}`}
+              </Title>
+              <ButtonWrapper>
+                <Button
+                  onClick={(e) => {
+                    handleClick(e);
+                  }}
+                >
+                  월
+                </Button>
+                <Button
+                  onClick={(e) => {
+                    handleClick(e);
+                  }}
+                >
+                  주
+                </Button>
+                <Button
+                  onClick={(e) => {
+                    handleClick(e);
+                  }}
+                >
+                  일
+                </Button>
+                <Button
+                  onClick={(e) => {
+                    handleClick(e);
+                  }}
+                >
+                  분
+                </Button>
+              </ButtonWrapper>
+            </TitleWrapper>
+          ) : (
+            <Title>
+              {data.length !== 0 &&
+                `${data.icon} ${data.stock.name} ${data.label}`}
+            </Title>
+          )}
           <Content>
             {data.label === '주식 차트' ? (
-              <StockChart code={data.stock.code} />
+              <StockChart code={data.stock.code} unit={unit} />
             ) : data.label === '매출액 / 영업이익 차트' ? (
               <FSChart flag={1} code={data.stock.code} />
             ) : data.label === 'PER / PBR 차트' ? (

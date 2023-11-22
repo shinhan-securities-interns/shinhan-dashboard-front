@@ -10,13 +10,32 @@ export const Container = styled.div`
   background: rgba(255, 255, 255, 0.3);
   box-shadow: inset 1px 3px 1px 0 rgba(255, 255, 255, 0.4);
 `;
+export const TitleWrapper = styled.div`
+  display: flex;
+`;
 
 export const Title = styled.div`
-  width: 98%;
+  width: ${(props) => (props.isStockChart === 'true' ? '68%' : '98%')};
   padding-left: 2%;
   padding-top: 2%;
   height: 8%;
   color: white;
+`;
+
+export const ButtonWrapper = styled.div`
+  width: 30%;
+  height: 8%;
+  padding-top: 2%;
+  display: flex;
+  justify-content: center;
+`;
+
+export const Button = styled.button`
+  width: 20%;
+  background: transparent;
+  &:hover {
+    color: white;
+  }
 `;
 
 export const Content = styled.div`
