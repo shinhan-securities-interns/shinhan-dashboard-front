@@ -4,21 +4,31 @@ import { axiosInstance } from '../../apis';
 import { Loading } from '../index';
 import { Container, ChartWrapper } from './styled';
 
-const StockChart = ({ code }) => {
+const StockChart = ({ code, unit }) => {
   const [chartData, setChartData] = useState([]);
-  const [flag, setFlag] = useState('D');
 
   const getData = async () => {
     try {
       const response = await axiosInstance.get(
-        `http://${process.env.REACT_APP_INDI_URL}/indi-stock/${code}/charts/${flag}`,
+        `http://${process.env.REACT_APP_INDI_URL}/indi-stock/${code}/charts/${unit}`,
         {
           headers: {
             'ngrok-skip-browser-warning': 'value',
           },
         }
       );
-      setChartData(formatChartData(response.data.chartData));
+      if (unit === '1') {
+        const modifiedChartData = response.data.chartData.map((item) => {
+          return {
+            ...item,
+            time: item.time + '00',
+          };
+        });
+        console.log(modifiedChartData);
+        setChartData(formatChartData(modifiedChartData));
+      } else {
+        setChartData(formatChartData(response.data.chartData));
+      }
     } catch (error) {
       console.error(error);
       throw error;
@@ -26,6 +36,10 @@ const StockChart = ({ code }) => {
   };
 
   const formatChartData = (data) => {
+    if (!Array.isArray(data) || data.length === 0) {
+      return [];
+    }
+
     return data.map((item) => ({
       x: new Date(
         `${item.date.substring(0, 4)}-${item.date.substring(
@@ -46,8 +60,9 @@ const StockChart = ({ code }) => {
   };
 
   useEffect(() => {
+    console.log(unit);
     getData();
-  }, [flag]);
+  }, [unit]);
 
   useEffect(() => {
     console.log(chartData);
@@ -77,7 +92,6 @@ const StockChart = ({ code }) => {
                 },
                 background: 'transparent',
               },
-
               plotOptions: {
                 candlestick: {
                   wick: {
@@ -92,6 +106,7 @@ const StockChart = ({ code }) => {
               xaxis: {
                 show: false,
                 type: 'datetime',
+                tickAmount: 5,
               },
               yaxis: {
                 tooltip: {

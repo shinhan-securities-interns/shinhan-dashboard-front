@@ -9,6 +9,7 @@ export const Container = styled.div`
   justify-content: center;
   align-items: center;
   background: white;
+  font-size: 1rem;
 `;
 
 export const Image = styled.img`
