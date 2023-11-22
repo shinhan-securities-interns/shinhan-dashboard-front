@@ -11,6 +11,11 @@ const FinancialStatementsChart = ({ flag, code }) => {
   const getData = async (endpoint) => {
     try {
       const response = await axiosInstance.get(endpoint);
+      if (Object.values(response.data)[0] === 'null') {
+        setIsEmpty(true);
+      } else {
+        setChartData(Object.values(response.data)[0]);
+      }
       return Object.values(response.data)[0];
     } catch (error) {
       console.error(error);

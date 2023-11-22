@@ -17,8 +17,11 @@ const FinancialStatementsTable = ({ code }) => {
   const getData = async () => {
     try {
       const response = await axiosInstance.get(`/total_yearly/quarter/${code}`);
-      setDate(Object.values(response.data)[0]);
-      console.log(data);
+      if (Object.values(response.data)[0] === 'null') {
+        setIsEmpty(true);
+      } else {
+        setDate(Object.values(response.data)[0]);
+      }
     } catch (error) {
       console.error(error);
     }
